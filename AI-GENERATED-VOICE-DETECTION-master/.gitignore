@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git/
+
+# VS Code
+.vscode/
+
+# Project Data (Too large for git)
+ai_voice_detection_api/training/data/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# Datasets (Too large for GitHub)
+ai_voice_detection_api/training/data/
+*.wav
+*.mp3
+*.mpeg
+*.flac
+*.ogg
+*.m4a
+
