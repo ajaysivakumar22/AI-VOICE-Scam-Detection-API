@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from pathlib import Path
 from app.schemas import VoiceRequest, VoiceResponse
@@ -58,27 +58,10 @@ app = FastAPI(
     ]
 )
 
-# Static files directory
-STATIC_DIR = Path(__file__).parent / "static"
-
-# Serve the frontend
-@app.get("/", tags=["UI"], include_in_schema=False)
-async def serve_spa():
-    index_path = STATIC_DIR / "index.html"
-    if not index_path.exists():
-        return HTMLResponse("<h1>Index file not found</h1>", status_code=404)
-        
-    with open(index_path, "r", encoding="utf-8") as f:
-        content = f.read()
-        
-    # Inject the correct API key dynamically
-    # This ensures the frontend always works even if the key changes in .env
-    content = content.replace("__API_KEY_PLACEHOLDER__", API_KEY if API_KEY else "")
-    
-    return HTMLResponse(content=content)
-
-# Mount static files
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+# Redirect the root to the API documentation
+@app.get("/", include_in_schema=False)
+async def root_redirect():
+    return RedirectResponse(url="/docs")
 
 
 # FIX 4: Global Exception Handler for consistent error format
