@@ -10,6 +10,7 @@ from app.audio.decoder import decode_base64_audio, decode_audio_bytes
 from app.audio.features import extract_features
 from app.ml.predictor import predict
 from app.ml.explanation import generate_explanation
+from app.ml.model import load_model_and_baselines
 import librosa
 import numpy as np
 
@@ -57,6 +58,15 @@ app = FastAPI(
         }
     ]
 )
+
+# Load model on startup to avoid delay on first request
+@app.on_event("startup")
+async def startup_event():
+    try:
+        load_model_and_baselines()
+        print("Model and baselines loaded successfully on startup.")
+    except Exception as e:
+        print(f"Error loading model on startup: {e}")
 
 # Redirect the root to the API documentation
 @app.get("/", include_in_schema=False)
@@ -152,9 +162,11 @@ def detect_voice(
     # Step 1: Decode audio
     waveform, sample_rate = decode_base64_audio(request.audioBase64, "mp3")
 
-    # Step 2: Duration check
+    # Step 2: Duration check & Truncation (Safety for Render timeouts)
     duration = len(waveform) / sample_rate
-    # Removed 3-30s duration restriction as per user request
+    MAX_DURATION = 30.0  # Limit to 30s to prevent memory issues
+    if duration > MAX_DURATION:
+        waveform = waveform[:int(MAX_DURATION * sample_rate)]
 
     # Step 3: Silence trimming (VAD)
     intervals = librosa.effects.split(waveform, top_db=25)
@@ -210,9 +222,11 @@ async def detect_voice_upload(
     file_ext = filename.split('.')[-1].lower() if '.' in filename else "mp3"
     waveform, sample_rate = decode_audio_bytes(audio_bytes, file_ext)
 
-    # Step 3: Duration check
+    # Step 3: Duration check & Truncation (Safety for Render timeouts)
     duration = len(waveform) / sample_rate
-    # Removed 3-30s duration restriction as per user request
+    MAX_DURATION = 30.0  # Limit to 30s to prevent memory issues
+    if duration > MAX_DURATION:
+        waveform = waveform[:int(MAX_DURATION * sample_rate)]
 
     # Step 4: Silence trimming (VAD)
     intervals = librosa.effects.split(waveform, top_db=25)

@@ -108,13 +108,14 @@ def decode_audio_bytes(audio_bytes: bytes, audio_format: str = "mp3"):
             pass
 
     # Method 2: Try using FFmpeg directly via subprocess
-    if os.path.exists(FFMPEG_EXE):
+    if shutil.which(FFMPEG_EXE):
         try:
             with tempfile.NamedTemporaryFile(suffix=f'.{audio_format}', delete=False) as temp_in:
                 temp_in.write(audio_bytes)
                 temp_in_path = temp_in.name
             
-            temp_out_path = temp_in_path.replace(f'.{audio_format}', '.wav')
+            # Create a temporary output path
+            temp_out_path = temp_in_path + ".wav"
             
             # Run FFmpeg to convert to WAV
             # CRITICAL: Force 22050Hz sample rate for consistency with training data

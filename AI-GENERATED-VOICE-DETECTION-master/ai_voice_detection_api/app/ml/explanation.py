@@ -47,7 +47,7 @@ def generate_explanation(features: np.ndarray, classification: str, confidence: 
     
     # Target distribution to compare against (if Human, look for Human matches, etc.)
     # Actually, we want to explain why it matched the PREDICTED class.
-    target_class = 'ai' if classification == 'AI' else 'human'
+    target_class = 'ai' if classification == 'AI_GENERATED' else 'human'
     other_class = 'human' if target_class == 'ai' else 'ai'
 
     for name, (idx, feat_key) in key_features.items():
